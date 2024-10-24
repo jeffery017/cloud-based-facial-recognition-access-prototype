@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 
 class Data(BaseModel):
     lock_id: str
-    encoding: str
+    embedding: list
  
 
 def cloudFactory():
@@ -38,15 +38,14 @@ def cloudFactory():
     @app.post('/register/')
     async def facial_register(request: Request):
         received_data = await request.g
-        unknown_encoding = pickle.load(received_data)
-        users.append(unknown_encoding)
+        embedding = pickle.load(received_data)
+        users.append(embedding)
 
     @app.post('/api/unlock/')
-    async def unlock(data: Data):    
-        json_data = np.fromstring( data.encoding[1: -1], sep=' ')
-        unknown_encoding = np.array(json_data)
+    async def unlock(data: Data):
+        unknown_embedding = data.embedding
 
-        if validate_user(users, unknown_encoding):
+        if validate_user(users, unknown_embedding):
             print('Approve user')
             return {'auth': 'approval'}
         else:
