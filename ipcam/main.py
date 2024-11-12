@@ -30,7 +30,7 @@ async def handle_unlock(request: Request):
     result = capture(filename) 
     # post to gateway
     filepath = f'./{filename}'
-    url = f'http://{get_local_ip()}:8001/api/unlock/'
+    url = f'http://localhost:8006/api/unlock/'
     result = send_image(filepath, url)
 
     # receive approval and return to client
@@ -45,7 +45,7 @@ def send_image(image_path, url):
         
         # files = {'file': file}
         data = {
-            'lock_id' :'device_1',
+            'lock_id' :1,
             'image': encoded_image
         }
         
@@ -71,4 +71,4 @@ def encode_image_to_base64(image_path: str) -> str:
 
 
 if __name__ == "__main__": 
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    uvicorn.run(app, host="0.0.0.0", port=8004)

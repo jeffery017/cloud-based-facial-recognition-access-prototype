@@ -17,7 +17,7 @@ Return: return_description
 from pydantic import BaseModel
 import time
 
-from gateway.libs.database import fetch_session, insert_session, insert_user, search_user_by_embedding
+from libs.database import fetch_session, insert_session, insert_user, search_user_by_embedding
 
 
 class Session(BaseModel):
@@ -51,9 +51,17 @@ def sessionsValidation(sessions:list[tuple[float, float]]):
     return any( session[0] <= current <= session[1] for session in sessions)
 
 def userHasValidSession(user_id, lock_id, currentTime) -> bool:
-    sessions = fetch_session(user_id, lock_id, currentTime) 
-    return bool(sessions) 
+    try:
+        sessions = fetch_session(user_id, lock_id, currentTime) 
+        print("success validate session")
+        return bool(sessions) 
+    except:
+        print("fail validate session")
+        return False
+    
+    
 
 def getUserIdByEmbedding(embedding):
     user_id = search_user_by_embedding(embedding) 
-    return user_id if user_id else ""
+    print(user_id)
+    return user_id if user_id else -1

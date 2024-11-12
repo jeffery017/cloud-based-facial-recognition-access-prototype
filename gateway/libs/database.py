@@ -1,8 +1,9 @@
 import pickle
 import sqlite3
+import time
 import numpy as np
 
-from facial import validate_user
+from libs.facial import validate_user
 
 def connect_db():
     return sqlite3.connect('my_database.db')
@@ -11,7 +12,7 @@ def create_session_table():
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS session (
+    CREATE TABLE IF NOT EXISTS SESSION (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         user_id TEXT NOT NULL,
         lock_id TEXT NOT NULL,
@@ -22,12 +23,13 @@ def create_session_table():
     conn.commit()
     cursor.close()
     conn.close()
+    print('created session')
 
 def insert_session(user_id, lock_id, startAt, endAt):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
-    INSERT INTO session (user_id, lock_id, startAt, endAt)
+    INSERT INTO SESSION (user_id, lock_id, startAt, endAt)
     VALUES (?, ?, ?, ?)
     ''', (user_id, lock_id, startAt, endAt))
     conn.commit()
@@ -38,7 +40,7 @@ def fetch_session(user_id, lock_id, currentTime):
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
-    SELECT startAt, endAt FROM session
+    SELECT startAt, endAt FROM SESSION
     WHERE user_id = ? AND lock_id = ? AND startAt <= ? AND endAt >= ?
     ''', (user_id, lock_id, currentTime, currentTime))
     rows = cursor.fetchall()  # Fetch a single row that matches the criteria
@@ -51,8 +53,8 @@ def create_users_table():
     conn = connect_db()
     cursor = conn.cursor()
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS embeddings (
-        user_id TEXT PRIMARY KEY,
+    CREATE TABLE IF NOT EXISTS USER (
+        user_id INT PRIMARY KEY,
         embedding BLOB NOT NULL
     )
     ''')
@@ -68,7 +70,7 @@ def insert_user(user_id, embedding):
     embedding_blob = pickle.dumps(embedding)
     
     cursor.execute('''
-    INSERT OR REPLACE INTO embeddings (user_id, embedding)
+    INSERT OR REPLACE INTO USER (user_id, embedding)
     VALUES (?, ?)
     ''', (user_id, embedding_blob))
     conn.commit()
@@ -80,7 +82,7 @@ def search_user_by_embedding(unknown_face):
     cursor = conn.cursor()
     
     # Fetch all embeddings from the database
-    cursor.execute('SELECT user_id, embedding FROM embeddings')
+    cursor.execute('SELECT user_id, embedding FROM USER')
     results = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -94,3 +96,7 @@ def search_user_by_embedding(unknown_face):
     
     return ""  # Return None if no match is found
 
+
+
+if __name__ == '__main__':
+    insert_session(user_id=1, lock_id=1, startAt=time.time(), endAt=time.time()+3600)

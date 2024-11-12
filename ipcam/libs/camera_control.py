@@ -9,7 +9,7 @@ def capture(filename):
         return False
 
     # Wait for the camera to warm up
-    time.sleep(0.2)
+    time.sleep(0.1)
 
     ret, frame = cap.read()
 
